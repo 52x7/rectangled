@@ -1,5 +1,21 @@
 from datetime import datetime, timedelta
 
+
+def dates_for_column(week):
+    '''week: a value from 0 to 51, relative to the origin date'''
+    origin = Datehelper.find_origin(datetime.now())
+    week_start = origin + timedelta(weeks=week)  # find the starting sunday
+    
+    # needs to be cleaner, oh well
+    dates = []
+    i = 0
+    while (i < 6):
+        dates.append(week_start + timedelta(days=i))
+        i += 1
+
+    return dates
+
+
 class Datehelper(object):
     @classmethod
     def find_origin(self, date):
