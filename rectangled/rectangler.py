@@ -2,7 +2,18 @@ from PIL import Image
 import github3
 import git
 
+
 REPO_NAME = "52x7"  # TODO: add this to config
+
+def invert_pixel(pixel, depth=16):
+    '''Invert a pixel's color 
+    Pixel should be a value of "L" mode from PIL (one value, not three).
+    The color should have already been converted to 4 bit by PIL as well.
+    '''
+    
+    # higher value = darker for github
+    inverted = depth - pixel  # as opposed to pixels, where higher = lighter
+    return inverted
 
 class Rectangler(object):
     def __init__(self, username, password, image):
