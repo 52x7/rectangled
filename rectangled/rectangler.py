@@ -21,6 +21,7 @@ class Rectangler(object):
         self.image.thumbnail((52,7), Image.ANTIALIAS)
         
         # check to see if this is the first run
+        # if there's no repo on github, chances are this hasn't been run yet
         repo = self.hub.repository(self.hub.user().login, REPO_NAME)
         if not repo:  # set up everything
             self._setup_repo(REPO_NAME)
