@@ -19,15 +19,16 @@ class Rectangler(object):
     def __init__(self, username, password, image):
         '''username: your github username
         password: your github password
-        image: path to an image, preferrably 52:7 aspect ratio'''
+        image: path to an image, preferrably 52:7 aspect ratio
+        '''
 
         self.username = username
         self.password = password
         self.hub = github3.login(username, password=password)
 
         self.image = Image.open(image)
-        # convert to grayscale for github (greenscale?)
-        self.image = self.image.convert("L")
+        # convert to grayscale for github (greenscale?), with 4 bit color
+        self.image = self.image.convert("L", colors=16)
         # and resize to 52x7
         self.image.thumbnail((52,7), Image.ANTIALIAS)
         
@@ -45,4 +46,4 @@ class Rectangler(object):
                                                  github_uri)
         self.local_repo = Repo.clone_from(clone_url,
                                           "/tmp/{}".format(REPO_NAME))
-
+    
