@@ -5,15 +5,16 @@ import git
 
 REPO_NAME = "52x7"  # TODO: add this to config
 
-def invert_pixel(pixel, depth=16):
-    '''Invert a pixel's color 
+def convert_pixel(pixel, colors=5):
+    '''Invert a pixel's color and convert the color to a value of 0 to 5
     Pixel should be a value of "L" mode from PIL (one value, not three).
-    The color should have already been converted to 4 bit by PIL as well.
     '''
     
     # higher value = darker for github
-    inverted = depth - pixel  # as opposed to pixels, where higher = lighter
-    return inverted
+    inverted = 255 - pixel  # as opposed to pixels, where higher = lighter
+    # reduce the 8 bit color depth to HubColor(tm) (7th grade algebra style)
+    reduced = int(round(inverted * colors / 255.0))
+    return reduced
 
 class Rectangler(object):
     def __init__(self, username, password, image):
@@ -27,8 +28,8 @@ class Rectangler(object):
         self.hub = github3.login(username, password=password)
 
         self.image = Image.open(image)
-        # convert to grayscale for github (greenscale?), with 4 bit color
-        self.image = self.image.convert("L", colors=16)
+        # convert to grayscale for github (greenscale?)
+        self.image = self.image.convert("L")
         # and resize to 52x7
         self.image.thumbnail((52,7), Image.ANTIALIAS)
         
