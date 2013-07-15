@@ -5,8 +5,8 @@ import git
 
 REPO_NAME = "52x7"  # TODO: add this to config
 
-def convert_pixel(pixel, colors=5):
-    '''Invert a pixel's color and convert the color to a value of 0 to 5
+def convert_pixel(pixel, colors=4):
+    '''Invert a pixel's color and convert the color to a value of 0 to 4
     Pixel should be a value of "L" mode from PIL (one value, not three).
     '''
     
