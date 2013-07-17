@@ -33,11 +33,12 @@ class Rectangler(object):
     def _setup_repo(self, name):
         '''Create remote and local repositories for the picture.'''
 
-        self.repo = self.hub.create_repo(name, has_issues=False,
+        self.github_repo = self.hub.create_repo(name, has_issues=False,
                                          has_wiki=False, has_downloads=False)
         github_uri = self.repo.clone_url.split("https://")[1]  # bad, i know...
         clone_url = "https://{0}:{1}@{2}".format(self.username, self.password,
                                                  github_uri)
-        self.local_repo = Repo.clone_from(clone_url, REPO_PATH,
+                
+        self.repo = Repo.clone_from(clone_url, REPO_PATH,
                                           odbt=git.GitCmdObjectDB)
 
