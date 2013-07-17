@@ -30,7 +30,6 @@ class Rectangler(object):
             self._setup_repo(REPO_NAME)
         else:
             self.repo = repo
-            self.local_repo = Repo(REPO_PATH, odbt=git.GitCmdObjectDB)
 
     def _setup_repo(self, name):
         '''Create remote and local repositories for the picture.'''
