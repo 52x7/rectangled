@@ -1,8 +1,10 @@
+import time
+from cStringIO import StringIO
+
 import github3
 import git
 
 import imagehelp
-
 
 REPO_NAME = "52x7"  # TODO: add this to config
 REPO_PATH = "/tmp/{}".format(REPO_NAME)
@@ -41,4 +43,68 @@ class Rectangler(object):
                 
         self.repo = Repo.clone_from(clone_url, REPO_PATH,
                                           odbt=git.GitCmdObjectDB)
+
+    def _setup_picture(self, name):
+        '''Create commits for all pixels and push them'''    
+
+        week = 0
+        while (week < 52):
+            week_colors = imagehelp.colors_for_column(week, self.image)
+            
+            for date, color in week_colors.iteritems():
+                pass
+            
+            week += 1
+
+    def commit_changes(self, count, date):
+        '''Commit a change on the repo.
+        count: number of changes to commit.
+        date: date the commits should be set to.
+        '''
+
+        def make_commit(repo):
+            '''Creates and makes a commit.
+            repo: the repo object we're committing too'''
+            # i think you can make a commit without any actual change, not sure
+            # ...copied from a stackoverflow
+
+            # make all of the commit details
+            message = "Rectangle commit message"
+            tree = repo.index.write_tree()
+            parents = [repo.head.commit]
+            committer = git.Actor(name="Rectangle", email=None)
+            author = committer
+            commit_time = int(date.strftime("%s"))
+            offset = time.altzone
+
+            conf_encoding = "UTF-8"
+            
+            commit = git.Commit(repo, git.Commit.NULL_BIN_SHA, tree,
+                                author, commit_time, offset, committer,
+                                commit_time, offset, message, parents,
+                                conf_encoding)
+            
+            # do some bullshit to make a hash
+            stream = StringIO()
+            commit._serialize(stream)
+            streamlen = stream.tell()
+            stream.seek(0)
+            istream = repo.odb.store(IStream(git.Commit.type, streamlen,
+                                     stream))
+            commit.binsha = istream.binsha
+
+            # and set the commit as HEAD
+            repo.head.set_commit(commit, logmsg="commit: %s" % message)
+
+        i = 0
+        while (i < count):
+            make_commit(self.repo)
+
+    def pull_changes(self):
+        origin = self.repo.remotes.origin
+        info = origin.pull()
+
+    def push_changes(self, count, date):
+        origin = self.repo.remotes.origin
+        info = origin.push()
 
