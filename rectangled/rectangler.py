@@ -1,5 +1,6 @@
 import time
 from cStringIO import StringIO
+import logging
 
 import github3
 import git
@@ -31,22 +32,30 @@ class Rectangler(object):
         # check to see if this is the first run
         # if there's no repo on github, chances are this hasn't been run yet
         repo = self.hub.repository(self.hub.user().login, REPO_NAME)
+
         if not repo:  # set up everything
-            self._setup_repo(REPO_NAME)
+            logging.debug("first time running")
+            logging.debug("setting up repo and making initial commits")
+
+            self.github_repo, self.repo = _setup_repo(REPO_NAME)
         else:
-            self.repo = repo
+            self.repo = git.Repo(REPO_PATH, odbt=git.GitCmdObjectDB)
+            self.github_repo = repo
+
+        logging.debug("repo: %r" % self.repo)
 
     def _setup_repo(self, name):
         '''Create remote and local repositories for the picture.'''
 
-        self.github_repo = self.hub.create_repo(name, has_issues=False,
+        github_repo = self.hub.create_repo(name, has_issues=False,
                                          has_wiki=False, has_downloads=False)
         github_uri = self.repo.clone_url.split("https://")[1]  # bad, i know...
         clone_url = "https://{0}:{1}@{2}".format(self.username, self.password,
                                                  github_uri)
-                
-        self.repo = Repo.clone_from(clone_url, REPO_PATH,
-                                          odbt=git.GitCmdObjectDB)
+        repo = Repo.clone_from(clone_url, REPO_PATH,
+                               odbt=git.GitCmdObjectDB)
+
+        return github_repo, repo
 
     def _setup_picture(self, name):
         '''Create commits for all pixels and push them'''    
@@ -99,6 +108,8 @@ class Rectangler(object):
                                      stream))
             commit.binsha = istream.binsha
 
+            logging.debug("making commit: %r" % commit)
+
             # and set the commit as HEAD
             repo.head.set_commit(commit, logmsg="commit: %s" % message)
 
@@ -106,10 +117,14 @@ class Rectangler(object):
         while (i < count):
             make_commit(self.repo)
 
+        logging.debug("committed %d changes on %r" % (count, date))
+
     def pull_changes(self):
+        logging.debug("pulling changes")
         origin = self.repo.remotes.origin
         info = origin.pull()
 
     def push_changes(self, count, date):
+        logging.debug("pushing changes")
         origin = self.repo.remotes.origin
         info = origin.push()
