@@ -116,6 +116,7 @@ class Rectangler(object):
         i = 0
         while (i < count):
             make_commit(self.repo)
+            i += 1
 
         logging.debug("committed %d changes on %r" % (count, date))
 
