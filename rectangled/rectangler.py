@@ -50,10 +50,12 @@ class Rectangler(object):
         week = 0
         while (week < 52):
             week_colors = imagehelp.colors_for_column(week, self.image)
-            
+
+            self.pull_changes()            
             for date, color in week_colors.iteritems():
-                pass
-            
+                self.commit_changes(color, date)
+            self.push_changes()
+
             week += 1
 
     def commit_changes(self, count, date):
