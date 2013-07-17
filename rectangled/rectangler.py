@@ -4,12 +4,13 @@ import logging
 
 import github3
 import git
+from gitdb import IStream
 
 import imagehelp
 
 REPO_NAME = "52x7"  # TODO: add this to config
 REPO_PATH = "/tmp/{}".format(REPO_NAME)
-
+REPO_FILE = "{}/data".format(REPO_PATH)
 
 class Rectangler(object):
     def __init__(self, username, password, image_path, log=False):
@@ -49,7 +50,9 @@ class Rectangler(object):
         '''Create remote and local repositories for the picture.'''
 
         github_repo = self.hub.create_repo(name, has_issues=False,
-                                         has_wiki=False, has_downloads=False)
+                                         has_wiki=False, has_downloads=False,
+                                         auto_init=True,
+                                         gitignore_template="C")
         github_uri = github_repo.clone_url.split("https://")[1]
         clone_url = "https://{0}:{1}@{2}".format(self.username, self.password,
                                                  github_uri)
@@ -65,10 +68,12 @@ class Rectangler(object):
         while (week < 52):
             week_colors = imagehelp.colors_for_column(week, self.image)
 
-            self.pull_changes()            
+            logging.debug(week_colors)
+
+            #self.pull_changes()            
             for date, color in week_colors.iteritems():
                 self.commit_changes(color, date)
-            self.push_changes()
+            #self.push_changes()
 
             week += 1
 
@@ -81,22 +86,13 @@ class Rectangler(object):
         def make_commit(repo):
             '''Creates and makes a commit.
             repo: the repo object we're committing too'''
-
-            # write a change (append a number to the repo's file)
-            # this probably isn't the most space efficient method,
-            # but after 3 years of committing the max, it will be under 1kb
-            with open(REPO_FILE, "a") as data_input:
-                data_input.write("%d" % count)
-
+            # afaik we can just make commits without changing anythign
             # ...copied from a stackoverflow
 
             # make all of the commit details
             message = "Rectangle commit message"
             tree = repo.index.write_tree()
-            try:
-                parents = [repo.head.commit]
-            except ValueError:  # repo is empty, so head doesnt exist
-                logging.debug("repo is empty")
+            parents = [repo.head.commit]
             committer = git.Actor(name="Rectangle", email=None)
             author = committer
             commit_time = int(date.strftime("%s"))
