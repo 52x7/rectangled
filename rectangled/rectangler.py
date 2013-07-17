@@ -11,7 +11,7 @@ REPO_PATH = "/tmp/{}".format(REPO_NAME)
 
 
 class Rectangler(object):
-    def __init__(self, username, password, image_path):
+    def __init__(self, username, password, image_path, log=False):
         '''username: your github username
         password: your github password
         image_path: path to an image, preferrably 52:7 aspect ratio
@@ -22,6 +22,11 @@ class Rectangler(object):
         self.hub = github3.login(username, password=password)
 
         self.image = imagehelp.open_image(image)
+
+        if log:
+            logging.basicConfig(level=logging.debug)
+        else:
+            logging.basicConfig(level=logging.warning)
 
         # check to see if this is the first run
         # if there's no repo on github, chances are this hasn't been run yet
@@ -108,4 +113,3 @@ class Rectangler(object):
     def push_changes(self, count, date):
         origin = self.repo.remotes.origin
         info = origin.push()
-
