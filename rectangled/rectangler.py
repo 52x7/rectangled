@@ -35,7 +35,7 @@ class Rectangler(object):
 
         self.repo = self.hub.create_repo(name, has_issues=False,
                                          has_wiki=False, has_downloads=False)
-        github_uri = new_repo.clone_url.split("https://")[1]  # bad, i know...
+        github_uri = self.repo.clone_url.split("https://")[1]  # bad, i know...
         clone_url = "https://{0}:{1}@{2}".format(self.username, self.password,
                                                  github_uri)
         self.local_repo = Repo.clone_from(clone_url, REPO_PATH,
