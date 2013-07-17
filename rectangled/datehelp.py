@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 
-def find_origin(self, date):
+def find_origin(date):
     '''Find the origin sunday given a day in the current week'''
 
     last_sunday = (date - timedelta(days=date.weekday()) + 
@@ -10,7 +10,7 @@ def find_origin(self, date):
     return origin_sunday
 
 
-def find_end(self, date):
+def find_end(date):
     '''Find the ending saturday relative to date'''
 
     if date is None:

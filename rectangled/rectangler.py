@@ -22,12 +22,12 @@ class Rectangler(object):
         self.password = password
         self.hub = github3.login(username, password=password)
 
-        self.image = imagehelp.open_image(image)
+        self.image = imagehelp.open_image(image_path)
 
         if log:
-            logging.basicConfig(level=logging.debug)
+            logging.basicConfig(level=logging.DEBUG)
         else:
-            logging.basicConfig(level=logging.warning)
+            logging.basicConfig(level=logging.WARNING)
 
         # check to see if this is the first run
         # if there's no repo on github, chances are this hasn't been run yet
@@ -37,7 +37,8 @@ class Rectangler(object):
             logging.debug("first time running")
             logging.debug("setting up repo and making initial commits")
 
-            self.github_repo, self.repo = _setup_repo(REPO_NAME)
+            self.github_repo, self.repo = self._setup_repo(REPO_NAME)
+            self._setup_picture()
         else:
             self.repo = git.Repo(REPO_PATH, odbt=git.GitCmdObjectDB)
             self.github_repo = repo
@@ -49,15 +50,15 @@ class Rectangler(object):
 
         github_repo = self.hub.create_repo(name, has_issues=False,
                                          has_wiki=False, has_downloads=False)
-        github_uri = self.repo.clone_url.split("https://")[1]  # bad, i know...
+        github_uri = github_repo.clone_url.split("https://")[1]
         clone_url = "https://{0}:{1}@{2}".format(self.username, self.password,
                                                  github_uri)
-        repo = Repo.clone_from(clone_url, REPO_PATH,
+        repo = git.Repo.clone_from(clone_url, REPO_PATH,
                                odbt=git.GitCmdObjectDB)
 
         return github_repo, repo
 
-    def _setup_picture(self, name):
+    def _setup_picture(self):
         '''Create commits for all pixels and push them'''    
 
         week = 0
