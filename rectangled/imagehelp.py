@@ -1,4 +1,14 @@
+from PIL import Image
 import datehelp
+
+
+def open_image(path):
+    image = Image.open(path)
+    # convert to grayscale for github (greenscale?)
+    image = image.convert("L")
+    # and resize to 52x7
+    image.thumbnail((52,7), Image.ANTIALIAS)
+    return image
 
 
 def convert_pixel(pixel, colors=4):
@@ -11,6 +21,7 @@ def convert_pixel(pixel, colors=4):
     # reduce the 8 bit color depth to HubColor(tm) (7th grade algebra style)
     reduced = int(round(inverted * colors / 255.0))
     return reduced
+
 
 def colors_for_column(week, image):
     '''week: a value from 0 to 51, relative to the origin date

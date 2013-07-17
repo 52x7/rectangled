@@ -1,6 +1,7 @@
-from PIL import Image
 import github3
 import git
+
+import imagehelp
 
 
 REPO_NAME = "52x7"  # TODO: add this to config
@@ -8,21 +9,17 @@ REPO_PATH = "/tmp/{}".format(REPO_NAME)
 
 
 class Rectangler(object):
-    def __init__(self, username, password, image):
+    def __init__(self, username, password, image_path):
         '''username: your github username
         password: your github password
-        image: path to an image, preferrably 52:7 aspect ratio
+        image_path: path to an image, preferrably 52:7 aspect ratio
         '''
 
         self.username = username
         self.password = password
         self.hub = github3.login(username, password=password)
 
-        self.image = Image.open(image)
-        # convert to grayscale for github (greenscale?)
-        self.image = self.image.convert("L")
-        # and resize to 52x7
-        self.image.thumbnail((52,7), Image.ANTIALIAS)
+        self.image = imagehelp.open_image(image)
 
         # check to see if this is the first run
         # if there's no repo on github, chances are this hasn't been run yet
