@@ -81,13 +81,22 @@ class Rectangler(object):
         def make_commit(repo):
             '''Creates and makes a commit.
             repo: the repo object we're committing too'''
-            # i think you can make a commit without any actual change, not sure
+
+            # write a change (append a number to the repo's file)
+            # this probably isn't the most space efficient method,
+            # but after 3 years of committing the max, it will be under 1kb
+            with open(REPO_FILE, "a") as data_input:
+                data_input.write("%d" % count)
+
             # ...copied from a stackoverflow
 
             # make all of the commit details
             message = "Rectangle commit message"
             tree = repo.index.write_tree()
-            parents = [repo.head.commit]
+            try:
+                parents = [repo.head.commit]
+            except ValueError:  # repo is empty, so head doesnt exist
+                logging.debug("repo is empty")
             committer = git.Actor(name="Rectangle", email=None)
             author = committer
             commit_time = int(date.strftime("%s"))
