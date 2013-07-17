@@ -13,13 +13,14 @@ REPO_PATH = "/tmp/{}".format(REPO_NAME)
 REPO_FILE = "{}/data".format(REPO_PATH)
 
 class Rectangler(object):
-    def __init__(self, username, password, image_path, log=False):
+    def __init__(self, username, email, password, image_path, log=False):
         '''username: your github username
         password: your github password
         image_path: path to an image, preferrably 52:7 aspect ratio
         '''
 
         self.username = username
+        self.email = email
         self.password = password
         self.hub = github3.login(username, password=password)
 
@@ -65,17 +66,18 @@ class Rectangler(object):
         '''Create commits for all pixels and push them'''    
 
         week = 0
+        self.pull_changes()            
         while (week < 52):
             week_colors = imagehelp.colors_for_column(week, self.image)
 
             logging.debug(week_colors)
 
-            #self.pull_changes()            
             for date, color in week_colors.iteritems():
                 self.commit_changes(color, date)
-            #self.push_changes()
-
             week += 1
+
+        self.push_changes()
+
 
     def commit_changes(self, count, date):
         '''Commit a change on the repo.
@@ -83,7 +85,7 @@ class Rectangler(object):
         date: date the commits should be set to.
         '''
 
-        def make_commit(repo):
+        def make_commit(repo, email):
             '''Creates and makes a commit.
             repo: the repo object we're committing too'''
             # afaik we can just make commits without changing anythign
@@ -93,7 +95,7 @@ class Rectangler(object):
             message = "Rectangle commit message"
             tree = repo.index.write_tree()
             parents = [repo.head.commit]
-            committer = git.Actor(name="Rectangle", email=None)
+            committer = git.Actor(name="Rectangle", email=email)
             author = committer
             commit_time = int(date.strftime("%s"))
             offset = time.altzone
@@ -121,7 +123,7 @@ class Rectangler(object):
 
         i = 0
         while (i < count):
-            make_commit(self.repo)
+            make_commit(self.repo, self.email)
             i += 1
 
         logging.debug("committed %d changes on %r" % (count, date))
@@ -131,7 +133,7 @@ class Rectangler(object):
         origin = self.repo.remotes.origin
         info = origin.pull()
 
-    def push_changes(self, count, date):
+    def push_changes(self):
         logging.debug("pushing changes")
         origin = self.repo.remotes.origin
         info = origin.push()
