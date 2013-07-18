@@ -60,6 +60,9 @@ class Rectangler(object):
         repo = git.Repo.clone_from(clone_url, REPO_PATH,
                                odbt=git.GitCmdObjectDB)
 
+        with open(REPO_FILE, "w") as repo_file:
+            pass  # just creating the file
+
         return github_repo, repo
 
     def _setup_picture(self):
@@ -88,9 +91,14 @@ class Rectangler(object):
         def make_commit(repo, email):
             '''Creates and makes a commit.
             repo: the repo object we're committing too'''
-            # afaik we can just make commits without changing anythign
-            # ...copied from a stackoverflow
 
+            # write a change (append a number to the repo's file)
+            with open(REPO_FILE, "a") as data_input:
+                data_input.write("%d" % count)
+
+            repo.index.add(["data"])  # stage the file
+
+            # ...copied from a stackoverflow
             # make all of the commit details
             message = "Rectangle commit message"
             tree = repo.index.write_tree()
