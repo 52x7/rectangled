@@ -17,6 +17,7 @@ class Rectangler(object):
         '''username: your github username
         password: your github password
         image_path: path to an image, preferrably 52:7 aspect ratio
+        log: enable debug logging?
         '''
 
         self.username = username
@@ -31,21 +32,20 @@ class Rectangler(object):
         else:
             logging.basicConfig(level=logging.WARNING)
 
+    def start(self):
         # check to see if this is the first run
         # if there's no repo on github, chances are this hasn't been run yet
         repo = self.hub.repository(self.hub.user().login, REPO_NAME)
-
-        if not repo:  # set up everything
+        
+        if not repo:  # first time, set up everything
             logging.debug("first time running")
             logging.debug("setting up repo and making initial commits")
-
+        
             self.github_repo, self.repo = self._setup_repo(REPO_NAME)
             self._setup_picture()
-        else:
+        else:  # this ain't our first rodeo, cowboy
             self.repo = git.Repo(REPO_PATH, odbt=git.GitCmdObjectDB)
             self.github_repo = repo
-
-        logging.debug("repo: %r" % self.repo)
 
     def _setup_repo(self, name):
         '''Create remote and local repositories for the picture.'''
