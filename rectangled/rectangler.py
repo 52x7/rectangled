@@ -106,15 +106,16 @@ class Rectangler(object):
     def _start_scheduler(self):
         '''Start a schedule that updates the commit log every week.'''
         # run every week
-        self.schedule.add_cron_job(self.__update_picture, day_of_week="saturday")
+        self.schedule.add_cron_job(self.__update_picture,
+                                   day_of_week="saturday")
         self.schedule.start()
 
     def __update_pictue(self):
         '''Tiles the picture every week (runs on saturdays)'''
 
-        logging.info("Updating picture")
-
         week = self.state.last_week
+        logging.info("Updating picture on week {}".format(week))
+
         start_date = self.state.start_date
         start_saturday = datehelp.find_end(start_date)
         today = datetime.datetime.now()
@@ -124,7 +125,8 @@ class Rectangler(object):
         self._pull_changes()
 
         while (week <= current_week):
-            week_colors = imagehelp.colors_for_column(week, self.image, start_date)
+            week_colors = imagehelp.colors_for_column(week, self.image,
+                                                      start_date)
             for date, color in week_colors.iteritems():
                 self._commit_changes(color, date)
 
