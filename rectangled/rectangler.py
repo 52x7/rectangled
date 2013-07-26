@@ -16,6 +16,7 @@ REPO_NAME = "52x7"  # TODO: add this to config
 REPO_PATH = "/tmp/{}".format(REPO_NAME)
 REPO_FILE = "{}/data".format(REPO_PATH)
 
+
 class Rectangler(object):
     def __init__(self, username, email, password, image_path,
                  log=logging.WARNING):
@@ -41,11 +42,11 @@ class Rectangler(object):
         # check to see if this is the first run
         # if there's no repo on github, chances are this hasn't been run yet
         repo = self.hub.repository(self.hub.user().login, REPO_NAME)
-        
+
         if not repo:  # first time, set up everything
             logging.debug("first time running")
             logging.debug("setting up repo and making initial commits")
-        
+
             self.github_repo, self.repo = self._setup_repo(REPO_NAME)
             self._setup_picture()
 
@@ -68,14 +69,15 @@ class Rectangler(object):
         '''Create remote and local repositories for the picture.'''
 
         github_repo = self.hub.create_repo(name, has_issues=False,
-                                         has_wiki=False, has_downloads=False,
-                                         auto_init=True,
-                                         gitignore_template="C")
+                                           has_wiki=False,
+                                           has_downloads=False,
+                                           auto_init=True,
+                                           gitignore_template="C")
         github_uri = github_repo.clone_url.split("https://")[1]
         clone_url = "https://{0}:{1}@{2}".format(self.username, self.password,
                                                  github_uri)
         repo = git.Repo.clone_from(clone_url, REPO_PATH,
-                               odbt=git.GitCmdObjectDB)        
+                                   odbt=git.GitCmdObjectDB)
 
         with open(REPO_FILE, "w") as repo_file:
             pass  # just creating the file
@@ -83,7 +85,7 @@ class Rectangler(object):
         return github_repo, repo
 
     def _setup_picture(self):
-        '''Create commits for all pixels and push them'''    
+        '''Create commits for all pixels and push them'''
 
         week = 0
         today = datetime.datetime.now()
@@ -151,12 +153,12 @@ class Rectangler(object):
             offset = time.altzone
 
             conf_encoding = "UTF-8"
-            
+
             commit = git.Commit(repo, git.Commit.NULL_BIN_SHA, tree,
                                 author, commit_time, offset, committer,
                                 commit_time, offset, message, parents,
                                 conf_encoding)
-            
+
             # do some bullshit to make a hash
             stream = StringIO()
             commit._serialize(stream)

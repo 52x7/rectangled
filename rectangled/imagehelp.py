@@ -7,7 +7,7 @@ def open_image(path):
     # convert to grayscale for github (greenscale?)
     image = image.convert("L")
     # and resize to 52x7
-    image.thumbnail((52,7), Image.ANTIALIAS)
+    image.thumbnail((52, 7), Image.ANTIALIAS)
     return image
 
 
@@ -27,12 +27,12 @@ def colors_for_column(week, image, start_date):
     '''week: a value from 0 to 51, relative to the origin date
     image: the image that is being converted
     start_date: date to start at
-    
+
     returns a dict, where key = date and value = color
     '''
 
     weekdates = datehelp.dates_for_column(week, start_date)
-    
+
     colors = {}
     imgcolumn = week
     imgrow = 0  # 0 is top, max is bottom
