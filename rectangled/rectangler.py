@@ -37,7 +37,7 @@ class Rectangler(object):
         self.state = None  # we'll get it later
         self.schedule = Scheduler()
 
-        logging.basicConfig(log)
+        logging.basicConfig(level=log)
 
     def start(self):
         # check to see if this is the first run
@@ -109,6 +109,7 @@ class Rectangler(object):
         self.schedule.add_cron_job(self.__update_picture,
                                    day_of_week="saturday")
         self.schedule.start()
+        logging.debug("scheduler started")
 
     def __update_pictue(self):
         '''Tiles the picture every week (runs on saturdays)'''

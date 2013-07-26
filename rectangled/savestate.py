@@ -20,7 +20,7 @@ class State(object):
                  "last_week": self.last_week}
 
         with open(path, "w") as save_file:
-            json.dump(sate, save_file)
+            json.dump(state, save_file)
 
     @classmethod
     def load_from_disk(path="/tmp/rectangled.save"):
