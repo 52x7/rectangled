@@ -105,9 +105,11 @@ class Rectangler(object):
 
     def _start_scheduler(self):
         '''Start a schedule that updates the commit log every week.'''
+        # make a lambda for the updater function so apscheduler doesn't cry
+        update = lambda: self.__update_picture()
+
         # run every week
-        self.schedule.add_cron_job(self.__update_picture,
-                                   day_of_week="saturday")
+        self.schedule.add_cron_job(update, day_of_week="sat")
         self.schedule.start()
         logging.debug("scheduler started")
 
