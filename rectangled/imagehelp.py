@@ -23,14 +23,15 @@ def convert_pixel(pixel, colors=4):
     return reduced
 
 
-def colors_for_column(week, image):
+def colors_for_column(week, image, start_date):
     '''week: a value from 0 to 51, relative to the origin date
     image: the image that is being converted
+    start_date: date to start at
     
     returns a dict, where key = date and value = color
     '''
 
-    weekdates = datehelp.dates_for_column(week)
+    weekdates = datehelp.dates_for_column(week, start_date)
     
     colors = {}
     imgcolumn = week
@@ -44,4 +45,3 @@ def colors_for_column(week, image):
         imgrow += 1
 
     return colors
-

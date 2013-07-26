@@ -20,10 +20,10 @@ def find_end(date):
     return next_saturday
 
 
-def dates_for_column(week):
+def dates_for_column(week, start_date):
     '''week: a value from 0 to 51, relative to the origin date'''
 
-    origin = find_origin(datetime.now())
+    origin = find_origin(start_date)
     week_start = origin + timedelta(weeks=week)  # find the starting sunday
     
     # needs to be cleaner, oh well
