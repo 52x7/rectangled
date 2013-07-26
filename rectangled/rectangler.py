@@ -1,19 +1,24 @@
 import time
 from cStringIO import StringIO
 import logging
+import datetime
+from apscheduler.scheduler import Scheduler
 
 import github3
 import git
 from gitdb import IStream
 
 import imagehelp
+import savestate
+
 
 REPO_NAME = "52x7"  # TODO: add this to config
 REPO_PATH = "/tmp/{}".format(REPO_NAME)
 REPO_FILE = "{}/data".format(REPO_PATH)
 
 class Rectangler(object):
-    def __init__(self, username, email, password, image_path, log=False):
+    def __init__(self, username, email, password, image_path,
+                 log=logging.WARNING):
         '''username: your github username
         password: your github password
         image_path: path to an image, preferrably 52:7 aspect ratio
@@ -27,10 +32,10 @@ class Rectangler(object):
 
         self.image = imagehelp.open_image(image_path)
 
-        if log:
-            logging.basicConfig(level=logging.DEBUG)
-        else:
-            logging.basicConfig(level=logging.WARNING)
+        self.state = None  # we'll get it later
+        self.schedule = Scheduler()
+
+        logging.basicConfig(log)
 
     def start(self):
         # check to see if this is the first run
@@ -43,9 +48,21 @@ class Rectangler(object):
         
             self.github_repo, self.repo = self._setup_repo(REPO_NAME)
             self._setup_picture()
+
+            # create new save state
+            self.state = savestate.State(start_date=datetime.datetime.now(),
+                                         week=0)
+            self.state.save_to_disk()
+
+            # and start the scheduler
+            self._start_scheduler()
+
         else:  # this ain't our first rodeo, cowboy
             self.repo = git.Repo(REPO_PATH, odbt=git.GitCmdObjectDB)
             self.github_repo = repo
+
+            self.state = State.load_from_disk()
+            self._start_scheduler()
 
     def _setup_repo(self, name):
         '''Create remote and local repositories for the picture.'''
@@ -58,7 +75,7 @@ class Rectangler(object):
         clone_url = "https://{0}:{1}@{2}".format(self.username, self.password,
                                                  github_uri)
         repo = git.Repo.clone_from(clone_url, REPO_PATH,
-                               odbt=git.GitCmdObjectDB)
+                               odbt=git.GitCmdObjectDB)        
 
         with open(REPO_FILE, "w") as repo_file:
             pass  # just creating the file
@@ -69,26 +86,51 @@ class Rectangler(object):
         '''Create commits for all pixels and push them'''    
 
         week = 0
-        self.pull_changes()            
+        today = datetime.datetime.now()
+
+        self._pull_changes()
         while (week < 52):
-            week_colors = imagehelp.colors_for_column(week, self.image)
+            week_colors = imagehelp.colors_for_column(week, self.image, today)
 
             logging.debug(week_colors)
 
             for date, color in week_colors.iteritems():
-                self.commit_changes(color, date)
+                self._commit_changes(color, date)
             week += 1
 
-        self.push_changes()
+        self._push_changes()
 
+    def _start_scheduler(self):
+        '''Start a schedule that updates the commit log every week.'''
+        # run every week
+        self.schedule.add_cron_job(self.__update_picture, day_of_week="sunday")
+        self.schedule.start()
 
-    def commit_changes(self, count, date):
+    def __update_pictue(self):
+        '''Tiles the picture every week (runs on sundays)'''
+
+        logging.info("Updating picture")
+
+        week = self.state.last_week
+        start_date = self.state.start_date
+
+        self._pull_changes()
+
+        week_colors = imagehelp.colors_for_column(week, self.image, start_date)
+        for date, color in week_colors.iteritems():
+            self._commit_changes(color, date)
+
+        self._push_changes()
+        self.state.last_week += 1  # done with this week, next
+        self.state.save_to_disk()  # save changes
+
+    def _commit_changes(self, count, date):
         '''Commit a change on the repo.
         count: number of changes to commit.
         date: date the commits should be set to.
         '''
 
-        def make_commit(repo, email):
+        def __make_commit(repo, email):
             '''Creates and makes a commit.
             repo: the repo object we're committing too'''
 
@@ -131,17 +173,17 @@ class Rectangler(object):
 
         i = 0
         while (i < count):
-            make_commit(self.repo, self.email)
+            __make_commit(self.repo, self.email)
             i += 1
 
         logging.debug("committed %d changes on %r" % (count, date))
 
-    def pull_changes(self):
+    def _pull_changes(self):
         logging.debug("pulling changes")
         origin = self.repo.remotes.origin
         info = origin.pull()
 
-    def push_changes(self):
+    def _push_changes(self):
         logging.debug("pushing changes")
         origin = self.repo.remotes.origin
         info = origin.push()
