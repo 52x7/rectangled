@@ -9,6 +9,7 @@ import git
 from gitdb import IStream
 
 import imagehelp
+import datehelp
 import savestate
 
 
@@ -105,25 +106,36 @@ class Rectangler(object):
     def _start_scheduler(self):
         '''Start a schedule that updates the commit log every week.'''
         # run every week
-        self.schedule.add_cron_job(self.__update_picture, day_of_week="sunday")
+        self.schedule.add_cron_job(self.__update_picture, day_of_week="saturday")
         self.schedule.start()
 
     def __update_pictue(self):
-        '''Tiles the picture every week (runs on sundays)'''
+        '''Tiles the picture every week (runs on saturdays)'''
 
         logging.info("Updating picture")
 
         week = self.state.last_week
         start_date = self.state.start_date
+        start_saturday = datehelp.find_end(start_date)
+        today = datetime.datetime.now()
+        # figure out what week we are in based on the start date
+        current_week = (today - start_saturday).days() / 7
 
         self._pull_changes()
 
-        week_colors = imagehelp.colors_for_column(week, self.image, start_date)
-        for date, color in week_colors.iteritems():
-            self._commit_changes(color, date)
+        while (week <= current_week):
+            week_colors = imagehelp.colors_for_column(week, self.image, start_date)
+            for date, color in week_colors.iteritems():
+                self._commit_changes(color, date)
+
+            week += 1
+            self.state.last_week = week  # done with this week, next
 
         self._push_changes()
-        self.state.last_week += 1  # done with this week, next
+
+        if week > 51:  # check to see if it's been a year
+            self.state.start_date += datetime.timedelta(years=1)
+            self.state.week = 52 - week
         self.state.save_to_disk()  # save changes
 
     def _commit_changes(self, count, date):
